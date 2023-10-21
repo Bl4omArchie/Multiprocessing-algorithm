@@ -1,21 +1,9 @@
 from random import randrange, getrandbits
-from math import lcm, gcd
 from Crypto.Util.number import inverse
+from math import lcm, gcd
 
-from time import perf_counter
-from contextlib import contextmanager
-import multiprocessing as mp
-from multiprocessing import Process
 
-key_pairs = []
 round = 4
-
-@contextmanager
-def timing(message):
-    t = perf_counter()
-    yield
-    print ("*chrono> ", message, perf_counter()-t)
-
 
 def isqrt (x):
     q = 1
@@ -103,34 +91,5 @@ def generate(nBits, e=65537):
 
     if pair_wise_consistency_test(n, e, d) == 0:
         raise ValueError("Error, please retry. Consistency test failed")
+    
     return n, e, d
-
-
-
-def generate_n_keys(num_key, nBits):
-    with timing(f"Generating {num_key} keys of {nBits} bits:"):
-        for _ in range(num_key):
-            key_pairs.append(generate(nBits))
-
-
-def multi_proc_simulation(num_keys, num_proc, nBits):
-    key_per_proc = num_keys//num_proc
-
-    with timing(f"With {num_proc} processus:"):
-        procs = []
-        for _ in range(num_proc):
-            proc = Process(target=generate_n_keys, args=(key_per_proc, nBits))
-            procs.append(proc)
-            proc.start()
-        
-        for proc in procs:
-            proc.join()
-
-
-if __name__ == "__main__":
-    #multi processus 
-    num_keys = 100
-    num_proc = 5
-
-    mp.set_start_method('spawn')
-    multi_proc_simulation(num_keys, num_proc, 2048)
